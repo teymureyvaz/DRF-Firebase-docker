@@ -7,6 +7,7 @@ from firebase_admin import credentials
 from rest_framework import authentication
 from rest_framework import exceptions
 from firebase_authentication.exceptions import FirebaseError
+from django.contrib.auth import get_user_model
 
 cred = credentials.Certificate({
   "type": "service_account",
@@ -45,5 +46,9 @@ class FirebaseAuthentication(authentication.BaseAuthentication):
         except Exception:
             raise FirebaseError()
 
-        user = User.objects.get(id=1)
-        return (user, None)
+        User = get_user_model()
+        try:
+            user = User.objects.get_or_create(username=uid)
+        except Exception as e:
+            user = None
+        return user
